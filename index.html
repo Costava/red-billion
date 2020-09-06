@@ -2,7 +2,6 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-
 		<title>Red Billion</title>
 
 		<style>
@@ -44,7 +43,15 @@
 				align-items: center;
 			}
 
-			.level-end-menu, .dead-menu {
+			.main-menu-title {
+				margin: 22px 0px;
+			}
+
+			.main-menu-play {
+				margin: 0px 0px 11px 0px;
+			}
+
+			.level-end-menu, .dead-menu, .help-menu {
 				width: 100%;
 				border: 0;
 				margin: 0;
@@ -61,7 +68,7 @@
 				text-transform: uppercase;
 			}
 
-			.le-wrapper, .dead-wrapper {
+			.le-wrapper, .dead-wrapper, .help-wrapper {
 				border: 4px solid white;
 				margin: 0;
 				padding: 24px;
@@ -111,6 +118,38 @@
 			.continue-button, .retry-button, .complete-button {
 				font-weight: bold;
 			}
+
+			.help-description {
+				margin: 0 0 96px 0;
+			}
+
+			.help-description-part {
+				font-weight: bold;
+			}
+
+			.help-description-part, .help-instructions-part {
+				margin: 4px 0px;
+			}
+
+			.help-instructions {
+				margin: 0 0 24px 0;
+			}
+
+			.turn-speed-wrapper {
+				margin: 0 0 24px 0;
+
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+			}
+
+			.turn-speed-spacer {
+				width: 10px;
+			}
+
+			.turn-speed-input {
+				text-align: right;
+			}
 		</style>
 	</head>
 
@@ -119,9 +158,34 @@
 		<canvas class="main-canvas">Canvas not supported</canvas>
 
 		<div class="main-menu">
-			<h1>Red Billion</h1>
+			<h1 class="main-menu-title">Red Billion</h1>
 
 			<button class="main-menu-play">Start</button>
+			<button class="main-menu-help">Help</button>
+		</div>
+
+		<div class="help-menu">
+			<div class="help-wrapper">
+				<div class="help-description">
+					<p class="help-description-part">The recipe shattered.</p>
+					<p class="help-description-part">404 Fragments.</p>
+					<p class="help-description-part">Recover the recipe.</p>
+				</div>
+
+				<div class="help-instructions">
+					<p class="help-instructions-part">Turn with A and D.</p>
+					<p class="help-instructions-part">Space or W to accelerate.</p>
+				</div>
+
+				<div class="turn-speed-wrapper">
+					<span>Turn speed:</span>
+					<span class="turn-speed-spacer"></span>
+					<input class="turn-speed-input" type="number"
+					       min="1" max="99999999" value="500"></input>
+				</div>
+
+				<button class="help-menu-back">Back</button>
+			</div>
 		</div>
 
 		<div class="level-end-menu">
@@ -480,7 +544,7 @@
 			////////////////////////////////////////////////////////////
 
 			function randomInt(min, max) {
-				return Math.floor(Math.random() * (max - min + 1)) + min;
+				return Math.floor(Math.random() * (max - min + 1)) + min
 			}
 
 			function randomBool() {
@@ -593,6 +657,14 @@
 				document.querySelector('.main-menu-play').disabled = true
 			}
 
+			function showHelpMenu() {
+				document.querySelector('.help-menu').style.marginTop = '0'
+			}
+
+			function hideHelpMenu() {
+				document.querySelector('.help-menu').style.marginTop = '-100%'
+			}
+
 			function showLevelEndMenu() {
 				document.querySelector('.level-end-menu').style.marginTop = '0'
 				document.querySelector('.oracle-number').innerHTML = currentLevel.oracleRule
@@ -634,6 +706,7 @@
 				document.body.focus()
 
 				hideMainMenu()
+				hideHelpMenu()
 				hideLevelEndMenu()
 				hideDeadMenu()
 			}
@@ -780,6 +853,7 @@
 
 					let playerDirVec = Vec2.fromRads(playerDir)
 
+					// // Debug
 					// if (kbMon.down['w']) {
 					// 	playerPos.add(playerDirVec.copy().scale(0.01 * dt))
 					// }
@@ -789,7 +863,7 @@
 					// }
 
 					// Maybe both space and w should accelerate
-					if (kbMon.down[' ']) {
+					if (kbMon.down[' '] || kbMon.down['w']) {
 						playerVel.add(playerDirVec.copy().scale(0.002 * dt))
 					}
 
@@ -997,6 +1071,7 @@
 
 			loop()
 
+			// Add hook to handle when window/viewport resizes
 			let handleResize = () => {
 				console.log("Handling window resize")
 				canvas.width = document.body.offsetWidth
@@ -1006,6 +1081,27 @@
 			let handleResizeHook = new Hook(window, 'resize', handleResize)
 			handleResize() // Initial run
 			handleResizeHook.start()
+
+			// Add hook to handle when turn speed UI is changed
+			let turnSpeedInputNum = Number(document.querySelector('.turn-speed-input').value)
+			let handleTurnSpeedInputChange = () => {
+				console.log("Handle turn speed input change")
+
+				let turnSpeedInput = document.querySelector('.turn-speed-input')
+				let value = turnSpeedInput.value;
+				let number = Number(value)
+
+				if (number >= 1 && number <= 99999999) {
+					turnSpeedInputNum = number
+					turnSpeed = number / 1000000
+				}
+				else {
+					turnSpeedInput.value = turnSpeedInputNum
+				}
+			}
+			handleTurnSpeedInputChange()
+			document.querySelector('.turn-speed-input')
+				.addEventListener('change', handleTurnSpeedInputChange)
 
 			document.querySelector('.main-menu-play').addEventListener('click', (e) => {
 				console.log("Main menu play button clicked")
@@ -1018,6 +1114,20 @@
 				})
 
 				startLevel(levels[0])
+			})
+
+			document.querySelector('.main-menu-help').addEventListener('click', (e) => {
+				console.log("Main menu help button clicked")
+
+				hideAllMenus()
+				showHelpMenu()
+			})
+
+			document.querySelector('.help-menu-back').addEventListener('click', (e) => {
+				console.log("Help menu back button clicked")
+
+				hideAllMenus()
+				showMainMenu()
 			})
 
 			document.querySelector('.retry-button').addEventListener('click', (e) => {
@@ -1070,14 +1180,14 @@
 			function saveFrame(canvas, frameNumber) {
 				frameNumber = String(frameNumber).padStart(5, '0')
 
-				let image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+				let image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream")
 
-				let a = document.createElement('a');
-				a.href = image;
-				a.download = 'frame' + frameNumber + '.png';
+				let a = document.createElement('a')
+				a.href = image
+				a.download = 'frame' + frameNumber + '.png'
 
-				document.body.appendChild(a);
-				a.click();
+				document.body.appendChild(a)
+				a.click()
 				// The behavior depends on your browser settings:
 				//  1. You may get a save dialog
 				//  2. Image may be automatically saved to designated downloads folder
