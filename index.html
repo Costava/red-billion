@@ -175,6 +175,7 @@
 				<div class="help-instructions">
 					<p class="help-instructions-part">Turn with A and D.</p>
 					<p class="help-instructions-part">Space or W to accelerate.</p>
+					<p class="help-instructions-part">Decrease/increase volume with 1 and 2</p>
 				</div>
 
 				<div class="turn-speed-wrapper">
@@ -765,11 +766,11 @@
 			let wallZeroDistance = 500.0
 
 			function startMotorSound() {
-				oscillator.connect(audioContext.destination);
+				motorGainNode.connect(audioContext.destination);
 			}
 
 			function stopMotorSound() {
-				oscillator.disconnect(audioContext.destination);
+				motorGainNode.disconnect(audioContext.destination);
 			}
 
 			// freq in hertz
@@ -784,6 +785,12 @@
 			let oscillator = audioContext.createOscillator()
 			oscillator.type = 'sine'
 			setMotorFreq(zeroMotorFreq)
+
+			const motorGainNode = audioContext.createGain()
+			oscillator.connect(motorGainNode)
+			// console.log(motorGainNode.gain.value)
+			motorGainNode.gain.value = 0.100
+
 			oscillator.start();
 
 			let ecmConfig = {
@@ -952,6 +959,27 @@
 					const newTime = new Date().getTime()
 					const dt = newTime - oldTime
 					oldTime = newTime
+
+					if (kbMon.down['1']) {
+						const newVal = motorGainNode.gain.value - 0.005
+
+						if (newVal > 0) {
+							motorGainNode.gain.value = newVal
+						}
+					}
+
+					if (kbMon.down['2']) {
+						const newVal = motorGainNode.gain.value + 0.005
+
+						// ~3.4 is the max
+						/* Source: https://developer.mozilla.org/en-US/docs/
+							Web/API/Web_Audio_API/Using_Web_Audio_API */
+						if (newVal < 3.4) {
+							motorGainNode.gain.value = newVal
+						}
+					}
+
+					// console.log(motorGainNode.gain.value)
 
 					if (kbMon.down['a']) {
 						playerDir += turnSpeed * dt
