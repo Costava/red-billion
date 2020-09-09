@@ -724,6 +724,8 @@
 				playerDir = Math.PI / 2.0
 
 				gameState = GameStateEnum.PLAYING
+
+				startMotorSound()
 			}
 
 			////////////////////////////////////////////////////////////
@@ -761,6 +763,28 @@
 			let wallMaxHeight = 1.1
 			// Walls are too small to be seen at this distance
 			let wallZeroDistance = 500.0
+
+			function startMotorSound() {
+				oscillator.connect(audioContext.destination);
+			}
+
+			function stopMotorSound() {
+				oscillator.disconnect(audioContext.destination);
+			}
+
+			// freq in hertz
+			function setMotorFreq(freq) {
+				// console.log(freq)
+				oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+			}
+
+			let zeroMotorFreq = 130
+			let hzPerSpeed = 120
+			const audioContext = new AudioContext()
+			let oscillator = audioContext.createOscillator()
+			oscillator.type = 'sine'
+			setMotorFreq(zeroMotorFreq)
+			oscillator.start();
 
 			let ecmConfig = {
 				init: EcmInitEnum.SINGLE_CENTER,
@@ -806,7 +830,7 @@
 					[-3.0, 1500.0, 15.0, 1000.0, alpha],
 					[-3.0, 1500.0, 15.0, 2000.0, alpha]
 				],
-				winPoint: new Vec2(0.0, 2100.0),
+				winPoint: new Vec2(0.0, 2090.0),
 				winRadius: 100.0,
 				oracleRule: 57,//randomInt(0, 255),
 				ecmConfig: {
@@ -823,14 +847,100 @@
 					One teaspoon salt`
 			}))
 
+			// points is a series of consecutive points where lines/walls should be
+			//  between them
+			// This function returns a "wallData" array expected by a Level
+			//  using the given points
+			function expandLongLine(points) {
+				let wallData = []
+
+				for (let i = 0; i < points.length - 1; ++i) {
+					let a = points[i]
+					let b = points[i + 1]
+
+					wallData.push([
+						a[0], a[1], b[0], b[1], b[2]
+					])
+				}
+
+				return wallData
+			}
+
+			levels.push(new Level({
+				wallData: expandLongLine([
+					// [x1, y1, x2, y2, getColorFunction]
+					[-15.0, 0.0],
+					[-15.0, 200.0, alpha],
+					[-30.0, 400.0, alpha],
+					[-45, 600, alpha],
+					[-75, 800, alpha],
+					[-125, 1000, alpha],
+					[-185, 1100, alpha],
+					[-305, 1300, alpha],
+					[-405, 1500, alpha],
+					[-445, 1600, alpha],
+					[-465, 1700, alpha],
+					[-465, 1800, alpha],
+					[-445, 2000, alpha],
+					[-425, 2100, alpha],
+					[-395, 2200, alpha],
+					[-355, 2300, alpha],
+					[-305, 2400, alpha],
+					[-245, 2500, alpha],
+					[-175, 2600, alpha],
+					[-125, 2700, alpha],
+					[-90, 2800, alpha],
+					[-80, 2900, alpha],
+					[-80, 3300, alpha]
+				]).concat(expandLongLine([
+					[15.0, 0.0],
+					[15.0, 200.0, alpha],
+					[0.0, 400, alpha],
+					[-15, 600, alpha],
+					[-45, 800, alpha],
+					[-95, 1000, alpha],
+					[-155, 1100, alpha],
+					[-275, 1300, alpha],
+					[-375, 1500, alpha],
+					[-415, 1600, alpha],
+					[-435, 1700, alpha],
+					[-435, 1800, alpha],
+					[-415, 2000, alpha],
+					[-395, 2100, alpha],
+					[-365, 2200, alpha],
+					[-325, 2300, alpha],
+					[-275, 2400, alpha],
+					[-215, 2500, alpha],
+					[-145, 2600, alpha],
+					[-95, 2700, alpha],
+					[-60, 2800, alpha],
+					[-50, 2900, alpha],
+					[-50, 3300, alpha]
+				])),
+				winPoint: new Vec2(-65, 3390.0),
+				winRadius: 100.0,
+				oracleRule: 154,
+				ecmConfig: {
+					init: EcmInitEnum.SINGLE_CENTER,
+					wrap: true
+				},
+				fragmentLow: 93,
+				fragmentHigh: 245,
+				fragmentText: `One tablespoon vegetable oil
+
+				Directions:
+				Wear smile on face
+				Mix ingredients well in bowl
+				Cook in pan on stove top
+				Turn off lights and unlock front door`
+			}))
+
 			let currentLevel = levels[0]
 
 			let gameState = GameStateEnum.NOT_PLAYING
 
 			hideAllMenus()
 			showMainMenu()
-			// DEBUG
-			// showLevelEndMenu()
 
 			let oldTime = new Date().getTime()
 			let loop = () => {
@@ -853,19 +963,13 @@
 
 					let playerDirVec = Vec2.fromRads(playerDir)
 
-					// // Debug
-					// if (kbMon.down['w']) {
-					// 	playerPos.add(playerDirVec.copy().scale(0.01 * dt))
-					// }
-					//
-					// if (kbMon.down['s']) {
-					// 	playerPos.sub(playerDirVec.copy().scale(0.01 * dt))
-					// }
-
 					// Maybe both space and w should accelerate
 					if (kbMon.down[' '] || kbMon.down['w']) {
 						playerVel.add(playerDirVec.copy().scale(0.002 * dt))
 					}
+
+					let freq = zeroMotorFreq + playerVel.mag() * hzPerSpeed
+					setMotorFreq(freq + randomInt(-15, 15))
 
 					playerVel.scale(0.9882)
 					let oldPlayerPos = playerPos.copy()
@@ -890,6 +994,7 @@
 							playerVel.y = 0.0
 							playerPos = oldPlayerPos
 
+							stopMotorSound()
 							showDeadMenu()
 						}
 					}
@@ -901,6 +1006,7 @@
 
 							gameState = GameStateEnum.LEVEL_END_REACHED
 
+							stopMotorSound()
 							showLevelEndMenu()
 						}
 					}
@@ -1113,6 +1219,7 @@
 					level.reset()
 				})
 
+				// Start first level
 				startLevel(levels[0])
 			})
 
@@ -1145,6 +1252,14 @@
 
 				hideAllMenus()
 				showMainMenu()
+			})
+
+			document.querySelector('.continue-button').addEventListener('click', (e) => {
+				console.log("Continue button clicked")
+
+				currentLevel = levels[levels.indexOf(currentLevel) + 1]
+				hideAllMenus()
+				startLevel(currentLevel)
 			})
 
 			document.querySelector('.quit-button').addEventListener('click', (e) => {
