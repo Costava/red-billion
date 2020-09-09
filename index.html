@@ -88,6 +88,24 @@
 				flex-direction: row;
 			}
 
+			.score-split {
+				display: flex;
+				flex-direction: row;
+			}
+
+			.fragment-text, .level-score-box, .total-score-box {
+				border: 1px solid white;
+				padding: 12px;
+			}
+
+			.level-score, .total-score {
+				font-weight: bold;
+			}
+
+			.score-spacer {
+				width: 12px;
+			}
+
 			.le-canvas {
 				margin-right: 24px;
 				border: 1px solid white;
@@ -107,6 +125,8 @@
 			}
 
 			.fragment-text {
+				margin: 0 0 12px 0;
+
 				white-space: pre-line;
 				font-family: monospace;
 			}
@@ -181,10 +201,11 @@
 				<div class="help-instructions">
 					<p class="help-instructions-part">TANK CONTROLS.</p>
 					<p class="help-instructions-part">DO DRIFTING.</p>
+					<p class="help-instructions-part">Going faster earns more points.</p>
 					<p class="help-instructions-part">Turn with A and D.</p>
 					<p class="help-instructions-part">Space or W to accelerate.</p>
-					<p class="help-instructions-part">Decrease/increase volume with 1 and 2</p>
-					<p class="help-instructions-part">Version: 0.2.0</p>
+					<p class="help-instructions-part">Decrease/increase volume with 1 and 2.</p>
+					<p class="help-instructions-part">Version: 0.3.0</p>
 					<p class="help-instructions-part">
 						<span>Author: </span>
 						<a href="https://github.com/Costava" target="_blank" class="dlink">Costava</a>
@@ -220,7 +241,21 @@
 				<div class="le-split">
 					<canvas class="le-canvas" width=256 height=256>Canvas not supported</canvas>
 
-					<p class="fragment-text">Lorem ipsum dolor sit amet</p>
+					<div class="le-column">
+						<p class="fragment-text">Lorem ipsum dolor sit amet</p>
+
+						<div class="score-split">
+							<div class="level-score-box">
+								<span>Level score: </span>
+								<span class="level-score">00000</span>
+							</div>
+							<div class="score-spacer"></div>
+							<div class="total-score-box">
+								<span>Total score: </span>
+								<span class="total-score">00000</span>
+							</div>
+						</div>
+					</div>
 				</div>
 
 				<div class="le-buttons">
@@ -690,6 +725,9 @@
 				document.querySelector('.fragment-high').innerHTML = currentLevel.fragmentHigh
 				document.querySelector('.fragment-text').innerHTML = currentLevel.fragmentText
 
+				document.querySelector('.level-score').innerHTML = score
+				document.querySelector('.total-score').innerHTML = totalScore
+
 				if (currentLevel == levels[levels.length - 1]) {
 					showFinalLeButtons()
 				}
@@ -742,6 +780,9 @@
 				playerDir = Math.PI / 2.0
 
 				gameState = GameStateEnum.PLAYING
+
+				score = 0
+				closestToGoal = playerPos.distanceTo(currentLevel.winPoint)
 
 				startMotorSound()
 			}
@@ -959,12 +1000,72 @@
 				Turn off lights and unlock front door`
 			}))
 
-			let currentLevel = levels[0]
+			// Third level
+			levels.push(new Level({
+				wallData: expandLongLine([
+					// [x1, y1, x2, y2, getColorFunction]
+					[-15, 0],
+					[-15, 300, alpha],
+					[-70, 600, alpha],
+					[40, 1100, alpha],
+					[-70, 1600, alpha],
+					[40, 2100, alpha],
+					[-15, 2500, alpha],
+					[-15, 4000, alpha],
+					[110, 4400, alpha],
+					[140, 4700, alpha],
+					[153, 5400, alpha]
+				]).concat(expandLongLine([
+					[15, 0],
+					[15, 300, alpha],
+					[-40, 600, alpha],
+					[70, 1100, alpha],
+					[-40, 1600, alpha],
+					[70, 2100, alpha],
+					[15, 2500, alpha],
+					[15, 4000, alpha],
+					[140, 4400, alpha],
+					[170, 4700, alpha],
+					[157, 5400, alpha]
+				])).concat([// Individual walls
+					[-5, 2800, 5, 2800, alpha],
 
+					[-15, 3100, -5, 3100, alpha],
+					[5, 3100, 15, 3100, alpha],
+
+					[-15, 3400, 7, 3400, alpha],
+					[-7, 3700, 15, 3700, alpha],
+
+					[110, 4400, 122.5, 4400, alpha],
+					[127.5, 4400, 140, 4400, alpha]
+				]),
+				winPoint: new Vec2(155, 5500),
+				winRadius: 100.0,
+				oracleRule: 9,
+				ecmConfig: {
+					init: EcmInitEnum.RANDOM,
+					wrap: true
+				},
+				fragmentLow: 246,
+				fragmentHigh: 404,
+				fragmentText: `Optionally, add chocolate chips
+					Top with syrup, yogurt, or whipped cream
+					Consume while looking out window
+					Kill and eat cloud
+					Makes one to two servings
+					Have day`
+			}))
+
+			let currentLevel = levels[0]
 			let gameState = GameStateEnum.NOT_PLAYING
+			let score = 0
+			let totalScore = 0
+			let closestToGoal = Number.POSITIVE_INFINITY
 
 			hideAllMenus()
 			showMainMenu()
+			// // Debugging
+			// showLevelEndMenu()
 
 			let oldTime = new Date().getTime()
 			let loop = () => {
@@ -1008,7 +1109,6 @@
 
 					let playerDirVec = Vec2.fromRads(playerDir)
 
-					// Maybe both space and w should accelerate
 					if (kbMon.down[' '] || kbMon.down['w']) {
 						playerVel.add(playerDirVec.copy().scale(0.002 * dt))
 					}
@@ -1046,10 +1146,25 @@
 
 					// If not dead
 					if (gameState == GameStateEnum.PLAYING) {
-						if (playerPos.distanceTo(currentLevel.winPoint) < currentLevel.winRadius) {
+						// Add to score if have gotten closer to goal
+						const distanceToGoal = playerPos.distanceTo(currentLevel.winPoint)
+
+						if (distanceToGoal < closestToGoal) {
+							const diff = closestToGoal - distanceToGoal
+
+							score += Math.floor(diff * playerVel.mag() * 8)
+
+							closestToGoal = distanceToGoal
+						}
+
+						// console.log(score)
+
+						if (distanceToGoal < currentLevel.winRadius) {
 							console.log("Level end reached")
 
 							gameState = GameStateEnum.LEVEL_END_REACHED
+
+							totalScore += score
 
 							stopMotorSound()
 							showLevelEndMenu()
@@ -1271,8 +1386,11 @@
 					level.reset()
 				})
 
+				totalScore = 0
 				// Start first level
 				startLevel(levels[0])
+				// // Debugging
+				// startLevel(levels[2])
 			})
 
 			document.querySelector('.retry-button').addEventListener('click', (e) => {
