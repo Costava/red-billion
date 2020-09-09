@@ -120,7 +120,7 @@
 			}
 
 			.help-description {
-				margin: 0 0 96px 0;
+				margin: 0 0 24px 0;
 			}
 
 			.help-description-part {
@@ -140,15 +140,22 @@
 
 				display: flex;
 				flex-direction: row;
+				justify-content: space-between;
 				align-items: center;
 			}
 
-			.turn-speed-spacer {
-				width: 10px;
+			.turn-speed-input {
+				max-width: 100px;
+				text-align: right;
 			}
 
-			.turn-speed-input {
-				text-align: right;
+			.dlink {
+				color: inherit;
+				text-decoration: inherit;
+			}
+
+			.dlink:hover {
+				text-decoration: underline;
 			}
 		</style>
 	</head>
@@ -173,14 +180,25 @@
 				</div>
 
 				<div class="help-instructions">
+					<p class="help-instructions-part">TANK CONTROLS.</p>
+					<p class="help-instructions-part">DO DRIFTING.</p>
 					<p class="help-instructions-part">Turn with A and D.</p>
 					<p class="help-instructions-part">Space or W to accelerate.</p>
 					<p class="help-instructions-part">Decrease/increase volume with 1 and 2</p>
+					<p class="help-instructions-part">Version: 0.1.0</p>
+					<p class="help-instructions-part">
+						<span>Author: </span>
+						<a href="https://github.com/Costava" target="_blank" class="dlink">Costava</a>
+					</p>
+					<p class="help-instructions-part">
+						<a href="https://github.com/Costava/red-billion" target="_blank" class="dlink">
+							<span>View source on GitHub</span>
+						</a>
+					</p>
 				</div>
 
 				<div class="turn-speed-wrapper">
-					<span>Turn speed:</span>
-					<span class="turn-speed-spacer"></span>
+					<span>Turn sensitivity:</span>
 					<input class="turn-speed-input" type="number"
 					       min="1" max="99999999" value="500"></input>
 				</div>
@@ -789,7 +807,7 @@
 			const motorGainNode = audioContext.createGain()
 			oscillator.connect(motorGainNode)
 			// console.log(motorGainNode.gain.value)
-			motorGainNode.gain.value = 0.100
+			motorGainNode.gain.value = 0.120
 
 			oscillator.start();
 
