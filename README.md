@@ -1,11 +1,16 @@
-# Red Billion
+Red Billion
+===========
 
 Developed for js13kgames 2020.
 
-## License
+[Play online](https://costava.github.io/red-billion/)
+
+License
+-------
 
 GNU General Public License Version 3. See file `LICENSE`.
 
-## Contributing
+Contributing
+------------
 
 Not currently accepting contributions.
