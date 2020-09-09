@@ -167,8 +167,7 @@
 		<div class="main-menu">
 			<h1 class="main-menu-title">Red Billion</h1>
 
-			<button class="main-menu-play">Start</button>
-			<button class="main-menu-help">Help</button>
+			<button class="main-menu-play">Continue</button>
 		</div>
 
 		<div class="help-menu">
@@ -185,7 +184,7 @@
 					<p class="help-instructions-part">Turn with A and D.</p>
 					<p class="help-instructions-part">Space or W to accelerate.</p>
 					<p class="help-instructions-part">Decrease/increase volume with 1 and 2</p>
-					<p class="help-instructions-part">Version: 0.1.0</p>
+					<p class="help-instructions-part">Version: 0.2.0</p>
 					<p class="help-instructions-part">
 						<span>Author: </span>
 						<a href="https://github.com/Costava" target="_blank" class="dlink">Costava</a>
@@ -203,7 +202,7 @@
 					       min="1" max="99999999" value="500"></input>
 				</div>
 
-				<button class="help-menu-back">Back</button>
+				<button class="help-menu-go">GO</button>
 			</div>
 		</div>
 
@@ -1258,7 +1257,14 @@
 			document.querySelector('.main-menu-play').addEventListener('click', (e) => {
 				console.log("Main menu play button clicked")
 
-				hideMainMenu()
+				hideAllMenus()
+				showHelpMenu()
+			})
+
+			document.querySelector('.help-menu-go').addEventListener('click', (e) => {
+				console.log("Help menu go button clicked")
+
+				hideAllMenus()
 				document.body.focus()
 
 				levels.forEach((level) => {
@@ -1267,20 +1273,6 @@
 
 				// Start first level
 				startLevel(levels[0])
-			})
-
-			document.querySelector('.main-menu-help').addEventListener('click', (e) => {
-				console.log("Main menu help button clicked")
-
-				hideAllMenus()
-				showHelpMenu()
-			})
-
-			document.querySelector('.help-menu-back').addEventListener('click', (e) => {
-				console.log("Help menu back button clicked")
-
-				hideAllMenus()
-				showMainMenu()
 			})
 
 			document.querySelector('.retry-button').addEventListener('click', (e) => {
