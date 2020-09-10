@@ -205,7 +205,7 @@
 					<p class="help-instructions-part">Turn with A and D.</p>
 					<p class="help-instructions-part">Space or W to accelerate.</p>
 					<p class="help-instructions-part">Decrease/increase volume with 1 and 2.</p>
-					<p class="help-instructions-part">Version: 0.4.0</p>
+					<p class="help-instructions-part">Version: 0.5.0</p>
 					<p class="help-instructions-part">
 						<span>Author: </span>
 						<a href="https://github.com/Costava" target="_blank" class="dlink">Costava</a>
@@ -842,7 +842,7 @@
 			oscillator.connect(motorGainNode)
 			motorGainNode.gain.value = 0.120
 
-			oscillator.start();
+			let oscillatorStarted = false
 
 			let ecmConfig = {
 				init: EcmInitEnum.SINGLE_CENTER,
@@ -1351,6 +1351,12 @@
 				.addEventListener('change', handleTurnSpeedInputChange)
 
 			document.querySelector('.main-menu-play').addEventListener('click', (e) => {
+				// We can start the oscillator now that there has been interaction on the page
+				if (!oscillatorStarted) {
+					oscillatorStarted = true
+					oscillator.start();
+				}
+
 				hideAllMenus()
 				showHelpMenu()
 			})
