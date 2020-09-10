@@ -205,7 +205,7 @@
 					<p class="help-instructions-part">Turn with A and D.</p>
 					<p class="help-instructions-part">Space or W to accelerate.</p>
 					<p class="help-instructions-part">Decrease/increase volume with 1 and 2.</p>
-					<p class="help-instructions-part">Version: 0.5.0</p>
+					<p class="help-instructions-part">Version: 0.6.0</p>
 					<p class="help-instructions-part">
 						<span>Author: </span>
 						<a href="https://github.com/Costava" target="_blank" class="dlink">Costava</a>
@@ -537,11 +537,18 @@
 
 			////////////////////////////////////////////////////////////
 
-			function alpha(info) {
+			// Wall color functions
+			// Return a canvas color based on info
+
+			function wAlpha(info) {
 				return 'rgb(' +
 					`${info.hitResult.intersection.x * 21.0 % 255}, ` +
 					`${info.hitResult.intersection.y * 21.0 % 255}, ` +
 					`${info.hitResult.intersection.x + info.hitResult.intersection.y % 255})`
+			}
+
+			function wRed(info) {
+				return 'rgb(255,0,0)'
 			}
 
 			class Wall {
@@ -814,7 +821,7 @@
 
 			let hfov = Math.PI / 180.0 * 90.0
 			// At zero distance, a wall is this many times taller than the canvas
-			let wallMaxHeight = 1.1
+			let wallMaxHeight = 1.3
 			// Walls are too small to be seen at this distance
 			let wallZeroDistance = 500.0
 
@@ -879,32 +886,6 @@
 			// 214 wrap RANDOM: updating black tri field
 			// 230 wrap RANDOM: stabilizes to good tri field ***
 
-			levels.push(new Level({
-				wallData: [
-					// [x1, y1, x2, y2, getColorFunction]
-					[15.0, 0.0, 15.0, 2000.0, alpha],
-					[-15.0, 0.0, -15.0, 2000.0, alpha],
-					[-6.0, 700.0, 6.0, 700.0, alpha],
-					[-3.0, 1500.0, 15.0, 1000.0, alpha],
-					[-3.0, 1500.0, 15.0, 2000.0, alpha]
-				],
-				winPoint: new Vec2(0.0, 2100.0),
-				winRadius: 100.0,
-				oracleRule: 57,//randomInt(0, 255),
-				ecmConfig: {
-					init: EcmInitEnum.SINGLE_CENTER,
-					wrap: true
-				},
-				fragmentLow: 1,
-				fragmentHigh: 92,
-				fragmentText: `Ingredients:
-					Two eggs
-					One cup flour
-					One cup milk
-					One teaspoon baking soda
-					One teaspoon salt`
-			}))
-
 			// points is a series of consecutive points where lines/walls should be
 			//  between them
 			// This function returns a "wallData" array expected by a Level
@@ -924,56 +905,87 @@
 				return wallData
 			}
 
+			// First level
 			levels.push(new Level({
 				wallData: expandLongLine([
+					[-20, 0],
+					[-20, 2400, wAlpha]
+				]).concat(expandLongLine([
+					[20, 0],
+					[20, 1000, wAlpha],
+					[-3, 1900, wAlpha],
+					[20, 2400, wAlpha],
+				])).concat([
 					// [x1, y1, x2, y2, getColorFunction]
+					[-6.0, 700.0, 6.0, 700.0, wRed]
+				]),
+				winPoint: new Vec2(0.0, 2500.0),
+				winRadius: 100.0,
+				oracleRule: 57,
+				ecmConfig: {
+					init: EcmInitEnum.SINGLE_CENTER,
+					wrap: true
+				},
+				fragmentLow: 1,
+				fragmentHigh: 92,
+				fragmentText: `Ingredients:
+					Two eggs
+					One cup flour
+					One cup milk
+					One teaspoon baking soda
+					One teaspoon salt`
+			}))
+
+			// Second level
+			levels.push(new Level({
+				wallData: expandLongLine([
 					[-15.0, 0.0],
-					[-15.0, 200.0, alpha],
-					[-30.0, 400.0, alpha],
-					[-45, 600, alpha],
-					[-75, 800, alpha],
-					[-125, 1000, alpha],
-					[-185, 1100, alpha],
-					[-305, 1300, alpha],
-					[-405, 1500, alpha],
-					[-445, 1600, alpha],
-					[-465, 1700, alpha],
-					[-465, 1800, alpha],
-					[-445, 2000, alpha],
-					[-425, 2100, alpha],
-					[-395, 2200, alpha],
-					[-355, 2300, alpha],
-					[-305, 2400, alpha],
-					[-245, 2500, alpha],
-					[-175, 2600, alpha],
-					[-125, 2700, alpha],
-					[-90, 2800, alpha],
-					[-80, 2900, alpha],
-					[-80, 3300, alpha]
+					[-15.0, 200.0, wAlpha],
+					[-30.0, 400.0, wAlpha],
+					[-45, 600, wAlpha],
+					[-75, 800, wAlpha],
+					[-125, 1000, wAlpha],
+					[-185, 1100, wAlpha],
+					[-305, 1300, wAlpha],
+					[-405, 1500, wAlpha],
+					[-445, 1600, wAlpha],
+					[-465, 1700, wAlpha],
+					[-465, 1800, wAlpha],
+					[-445, 2000, wAlpha],
+					[-425, 2100, wAlpha],
+					[-395, 2200, wAlpha],
+					[-355, 2300, wAlpha],
+					[-305, 2400, wAlpha],
+					[-245, 2500, wAlpha],
+					[-175, 2600, wAlpha],
+					[-125, 2700, wAlpha],
+					[-90, 2800, wAlpha],
+					[-80, 2900, wAlpha],
+					[-80, 3300, wAlpha]
 				]).concat(expandLongLine([
 					[15.0, 0.0],
-					[15.0, 200.0, alpha],
-					[0.0, 400, alpha],
-					[-15, 600, alpha],
-					[-45, 800, alpha],
-					[-95, 1000, alpha],
-					[-155, 1100, alpha],
-					[-275, 1300, alpha],
-					[-375, 1500, alpha],
-					[-415, 1600, alpha],
-					[-435, 1700, alpha],
-					[-435, 1800, alpha],
-					[-415, 2000, alpha],
-					[-395, 2100, alpha],
-					[-365, 2200, alpha],
-					[-325, 2300, alpha],
-					[-275, 2400, alpha],
-					[-215, 2500, alpha],
-					[-145, 2600, alpha],
-					[-95, 2700, alpha],
-					[-60, 2800, alpha],
-					[-50, 2900, alpha],
-					[-50, 3300, alpha]
+					[15.0, 200.0, wAlpha],
+					[0.0, 400, wAlpha],
+					[-15, 600, wAlpha],
+					[-45, 800, wAlpha],
+					[-95, 1000, wAlpha],
+					[-155, 1100, wAlpha],
+					[-275, 1300, wAlpha],
+					[-375, 1500, wAlpha],
+					[-415, 1600, wAlpha],
+					[-435, 1700, wAlpha],
+					[-435, 1800, wAlpha],
+					[-415, 2000, wAlpha],
+					[-395, 2100, wAlpha],
+					[-365, 2200, wAlpha],
+					[-325, 2300, wAlpha],
+					[-275, 2400, wAlpha],
+					[-215, 2500, wAlpha],
+					[-145, 2600, wAlpha],
+					[-95, 2700, wAlpha],
+					[-60, 2800, wAlpha],
+					[-50, 2900, wAlpha],
+					[-50, 3300, wAlpha]
 				])),
 				winPoint: new Vec2(-65, 3400.0),
 				winRadius: 100.0,
@@ -993,44 +1005,43 @@
 				Turn off lights and unlock front door`
 			}))
 
-			// Third level
+			// Third/final level
 			levels.push(new Level({
 				wallData: expandLongLine([
-					// [x1, y1, x2, y2, getColorFunction]
 					[-15, 0],
-					[-15, 300, alpha],
-					[-70, 600, alpha],
-					[40, 1100, alpha],
-					[-70, 1600, alpha],
-					[40, 2100, alpha],
-					[-15, 2500, alpha],
-					[-15, 4000, alpha],
-					[110, 4400, alpha],
-					[140, 4700, alpha],
-					[153, 5400, alpha]
+					[-15, 300, wAlpha],
+					[-70, 600, wAlpha],
+					[40, 1100, wAlpha],
+					[-70, 1600, wAlpha],
+					[40, 2100, wAlpha],
+					[-15, 2500, wAlpha],
+					[-15, 4000, wAlpha],
+					[110, 4400, wAlpha],
+					[140, 4700, wAlpha],
+					[153, 5400, wAlpha]
 				]).concat(expandLongLine([
 					[15, 0],
-					[15, 300, alpha],
-					[-40, 600, alpha],
-					[70, 1100, alpha],
-					[-40, 1600, alpha],
-					[70, 2100, alpha],
-					[15, 2500, alpha],
-					[15, 4000, alpha],
-					[140, 4400, alpha],
-					[170, 4700, alpha],
-					[157, 5400, alpha]
+					[15, 300, wAlpha],
+					[-40, 600, wAlpha],
+					[70, 1100, wAlpha],
+					[-40, 1600, wAlpha],
+					[70, 2100, wAlpha],
+					[15, 2500, wAlpha],
+					[15, 4000, wAlpha],
+					[140, 4400, wAlpha],
+					[170, 4700, wAlpha],
+					[157, 5400, wAlpha]
 				])).concat([// Individual walls
-					[-5, 2800, 5, 2800, alpha],
+					[-4, 2800, 4, 2800, wRed],
 
-					[-15, 3100, -5, 3100, alpha],
-					[5, 3100, 15, 3100, alpha],
+					[-15, 3100, -6, 3100, wRed],
+					[6, 3100, 15, 3100, wRed],
 
-					[-15, 3400, 7, 3400, alpha],
-					[-7, 3700, 15, 3700, alpha],
+					[-15, 3400, 5, 3400, wRed],
+					[-5, 3700, 15, 3700, wRed],
 
-					[110, 4400, 122.5, 4400, alpha],
-					[127.5, 4400, 140, 4400, alpha]
+					[110, 4400, 120, 4400, wRed],
+					[130, 4400, 140, 4400, wRed]
 				]),
 				winPoint: new Vec2(155, 5500),
 				winRadius: 100.0,
@@ -1060,12 +1071,13 @@
 
 			let oldTime = new Date().getTime()
 			let loop = () => {
+				const newTime = new Date().getTime()
+				const dt = newTime - oldTime
+				// Maybe this line should go at end of loop
+				oldTime = newTime
+
 				if (gameState == GameStateEnum.PLAYING) {
 					let numRays = canvas.width
-
-					const newTime = new Date().getTime()
-					const dt = newTime - oldTime
-					oldTime = newTime
 
 					if (kbMon.down['1']) {
 						const newVal = motorGainNode.gain.value - 0.005
@@ -1137,7 +1149,9 @@
 						if (distanceToGoal < closestToGoal) {
 							const diff = closestToGoal - distanceToGoal
 
-							score += Math.floor(diff * playerVel.mag() * 8)
+							// Arbitrary way to increase influence of speed on score
+							const num = playerVel.mag() + 1
+							score += Math.floor(diff * num * num)
 
 							closestToGoal = distanceToGoal
 						}
@@ -1209,11 +1223,12 @@
 									playerPos: playerPos,
 									playerVel: playerVel
 								})
-								// Extend the walls on both sides by 1 to avoid visual gaps
+								// No longer necessary to extend both sides of walls by 1
+								//  because the resolution is set to the current canvas width
 								ctx.fillRect(
-									i * wallSegmentWidth - 1,
+									i * wallSegmentWidth,
 									(canvas.height / 2) - (wallHeight / 2),
-									wallSegmentWidth + 2,
+									wallSegmentWidth,
 									wallHeight
 								)
 								ctx.restore()
@@ -1372,8 +1387,6 @@
 				totalScore = 0
 				// Start first level
 				startLevel(levels[0])
-				// // Debugging
-				// startLevel(levels[2])
 			})
 
 			document.querySelector('.retry-button').addEventListener('click', (e) => {
