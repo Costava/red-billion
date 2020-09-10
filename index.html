@@ -205,7 +205,7 @@
 					<p class="help-instructions-part">Turn with A and D.</p>
 					<p class="help-instructions-part">Space or W to accelerate.</p>
 					<p class="help-instructions-part">Decrease/increase volume with 1 and 2.</p>
-					<p class="help-instructions-part">Version: 0.3.0</p>
+					<p class="help-instructions-part">Version: 0.4.0</p>
 					<p class="help-instructions-part">
 						<span>Author: </span>
 						<a href="https://github.com/Costava" target="_blank" class="dlink">Costava</a>
@@ -338,8 +338,6 @@
 
 					this.upHook = new Hook(window, 'keyup', (e) => {
 						this.down[e.key] = false
-
-						// console.log(document.activeElement)
 					})
 				}
 
@@ -770,10 +768,7 @@
 			////////////////////////////////////////////////////////////
 
 			function startLevel(level) {
-				console.log("Starting level")
 				currentLevel = level
-
-				// console.log(currentLevel.oracleRule)
 
 				playerPos = new Vec2(0.0, 0.0)
 				playerVel = new Vec2(0.0, 0.0)
@@ -833,7 +828,6 @@
 
 			// freq in hertz
 			function setMotorFreq(freq) {
-				// console.log(freq)
 				oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
 			}
 
@@ -846,7 +840,6 @@
 
 			const motorGainNode = audioContext.createGain()
 			oscillator.connect(motorGainNode)
-			// console.log(motorGainNode.gain.value)
 			motorGainNode.gain.value = 0.120
 
 			oscillator.start();
@@ -1064,13 +1057,9 @@
 
 			hideAllMenus()
 			showMainMenu()
-			// // Debugging
-			// showLevelEndMenu()
 
 			let oldTime = new Date().getTime()
 			let loop = () => {
-				// console.log("loop")
-
 				if (gameState == GameStateEnum.PLAYING) {
 					let numRays = canvas.width
 
@@ -1097,8 +1086,6 @@
 						}
 					}
 
-					// console.log(motorGainNode.gain.value)
-
 					if (kbMon.down['a']) {
 						playerDir += turnSpeed * dt
 					}
@@ -1122,7 +1109,6 @@
 
 					let movementVec = playerPos.copy().sub(oldPlayerPos)
 					let movementDistance = movementVec.mag()
-					// console.log(movementDistance)
 
 					if (movementDistance > 0.0) {
 						let movementVecUnit = movementVec.copy().normalize()
@@ -1132,7 +1118,6 @@
 
 						if (movementHitInfo != null && movementHitInfo.result.t < movementDistance) {
 							// Collided with a wall
-							console.log("DEAD")
 							gameState = GameStateEnum.DEAD
 
 							playerVel.x = 0.0
@@ -1157,11 +1142,7 @@
 							closestToGoal = distanceToGoal
 						}
 
-						// console.log(score)
-
 						if (distanceToGoal < currentLevel.winRadius) {
-							console.log("Level end reached")
-
 							gameState = GameStateEnum.LEVEL_END_REACHED
 
 							totalScore += score
@@ -1174,7 +1155,7 @@
 					// console.log("playerPos:", playerPos)
 					// console.log("playerDir:", playerDir)
 
-					// Clear canvas to black
+					// Clear canvas
 					let floorHalfHeight = Math.floor(canvas.height / 2.0)
 					ctx.save()
 					ctx.fillStyle = 'rgb(20, 20, 30)'
@@ -1207,7 +1188,7 @@
 
 						if (hitInfo != null) {
 							// console.log("INTERSECTS")
-							let distToPlayer = hitInfo.result.intersection.copy().sub(playerPos).mag()
+							let distToPlayer = hitInfo.result.intersection.distanceTo(playerPos)
 
 							// console.log("distToPlayer:", distToPlayer, "t:", hit.t)
 
@@ -1370,15 +1351,11 @@
 				.addEventListener('change', handleTurnSpeedInputChange)
 
 			document.querySelector('.main-menu-play').addEventListener('click', (e) => {
-				console.log("Main menu play button clicked")
-
 				hideAllMenus()
 				showHelpMenu()
 			})
 
 			document.querySelector('.help-menu-go').addEventListener('click', (e) => {
-				console.log("Help menu go button clicked")
-
 				hideAllMenus()
 				document.body.focus()
 
@@ -1394,42 +1371,29 @@
 			})
 
 			document.querySelector('.retry-button').addEventListener('click', (e) => {
-				console.log("Retry button clicked")
-
 				hideAllMenus()
-
 				startLevel(currentLevel)
 			})
 
 			document.querySelector('.dead-button').addEventListener('click', (e) => {
-				console.log("Dead button clicked")
-
 				gameState = GameStateEnum.NOT_PLAYING
-
 				hideAllMenus()
 				showMainMenu()
 			})
 
 			document.querySelector('.continue-button').addEventListener('click', (e) => {
-				console.log("Continue button clicked")
-
 				currentLevel = levels[levels.indexOf(currentLevel) + 1]
 				hideAllMenus()
 				startLevel(currentLevel)
 			})
 
 			document.querySelector('.quit-button').addEventListener('click', (e) => {
-				console.log("Quit button clicked")
-
 				gameState = GameStateEnum.NOT_PLAYING
-
 				hideAllMenus()
 				showMainMenu()
 			})
 
 			document.querySelector('.complete-button').addEventListener('click', (e) => {
-				console.log("Complete button clicked")
-
 				hideAllMenus()
 				gameState = GameStateEnum.COMPLETE
 			})
